@@ -1,0 +1,7 @@
+﻿{
+  "name": "aigaane-v3-api",
+  "version": "3.0.0",
+  "scripts": {
+    "start": "node api/index.js"
+  }
+}
