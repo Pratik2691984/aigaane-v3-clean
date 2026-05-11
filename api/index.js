@@ -1,4 +1,5 @@
-module.exports = (req, res) => {
+export default async function handler(req, res) {
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,20 +21,40 @@ module.exports = (req, res) => {
   
   const url = req.url;
   
+  // Health endpoint
   if (url === '/api/health') {
-    return res.status(200).json({ status: 'ok', version: '3.0.0', ragas: Object.keys(ragas).length });
+    return res.status(200).json({ 
+      status: 'ok', 
+      version: '3.0.0',
+      ragas_count: Object.keys(ragas).length,
+      message: 'Aigaane V3 API is running'
+    });
   }
   
+  // Get all ragas
   if (url === '/api/ragas') {
-    const list = Object.entries(ragas).map(([name, d]) => ({ name, rasa: d.rasa, samay: d.samay, therapeutic: d.therapeutic }));
+    const list = Object.keys(ragas).map(name => ({
+      name: name,
+      rasa: ragas[name].rasa,
+      samay: ragas[name].samay,
+      therapeutic: ragas[name].therapeutic
+    }));
     return res.status(200).json(list);
   }
   
+  // Get single raga
   if (url.startsWith('/api/raga/')) {
     const name = url.split('/api/raga/')[1];
-    if (ragas[name]) return res.status(200).json({ name, ...ragas[name] });
-    return res.status(404).json({ error: 'Not found' });
+    if (ragas[name]) {
+      return res.status(200).json({ name: name, ...ragas[name] });
+    }
+    return res.status(404).json({ error: 'Raga not found' });
   }
   
-  return res.status(200).json({ message: 'Aigaane V3 API', endpoints: ['/api/health', '/api/ragas', '/api/raga/{name}'] });
-};
+  // Root API endpoint
+  return res.status(200).json({ 
+    message: 'Aigaane V3 API',
+    endpoints: ['/api/health', '/api/ragas', '/api/raga/{name}'],
+    note: 'Try GET /api/health or GET /api/ragas'
+  });
+}
